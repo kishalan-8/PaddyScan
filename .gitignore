@@ -8,8 +8,7 @@ backend/**/__pycache__/
 # Uploaded images and model weights
 backend/uploads/*
 !backend/uploads/.gitkeep
-backend/trained_models/**/*.pt
-backend/trained_models/**/*.pth
+
 
 # Frontend
 frontend/node_modules/
