@@ -1,4 +1,4 @@
-# RiceDiseaseWebApp
+# PaddyScan
 
 A local full-stack application that validates a paddy leaf with YOLOv10, classifies the detected crop with ResNet18, and provides location-aware field weather through WeatherAPI.com.
 
