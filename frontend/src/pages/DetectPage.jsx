@@ -1,31 +1,47 @@
 import { AlertCircle, ArrowRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import DropZone from '../components/DropZone'
 import LoadingState from '../components/LoadingState'
 import PredictionResult from '../components/PredictionResult'
 import usePrediction from '../hooks/usePrediction'
 
 export default function DetectPage() {
-  const [file, setFile] = useState(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [selections, setSelections] = useState([])
+  const previewUrls = useRef(new Set())
   const { result, error, isLoading, uploadProgress, analyze, reset, setError } = usePrediction()
 
-  useEffect(() => () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-  }, [previewUrl])
+  useEffect(() => () => previewUrls.current.forEach((url) => URL.revokeObjectURL(url)), [])
 
-  function selectFile(selectedFile) {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setFile(selectedFile)
-    setPreviewUrl(URL.createObjectURL(selectedFile))
+  function selectFiles(files) {
+    const added = files.map((file) => {
+      const previewUrl = URL.createObjectURL(file)
+      previewUrls.current.add(previewUrl)
+      return { file, previewUrl }
+    })
+    setSelections((current) => [...current, ...added])
+    setError('')
+    reset()
+  }
+
+  function removeSelection(index) {
+    setSelections((current) => {
+      const removed = current[index]
+      if (removed) {
+        URL.revokeObjectURL(removed.previewUrl)
+        previewUrls.current.delete(removed.previewUrl)
+      }
+      return current.filter((_, itemIndex) => itemIndex !== index)
+    })
     setError('')
     reset()
   }
 
   function clearSelection() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setFile(null)
-    setPreviewUrl('')
+    selections.forEach(({ previewUrl }) => {
+      URL.revokeObjectURL(previewUrl)
+      previewUrls.current.delete(previewUrl)
+    })
+    setSelections([])
     reset()
   }
 
@@ -43,22 +59,21 @@ export default function DetectPage() {
             <p className="eyebrow">Leaf check</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Inspect a rice leaf</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-ink/55 sm:text-base">
-              Choose one clear image. The leaf is validated before disease analysis begins.
+              Add up to five leaves from the same field. Each leaf is validated before a combined diagnosis is produced.
             </p>
           </div>
         )}
 
         {result ? (
-          <PredictionResult result={result} previewUrl={previewUrl} onReset={startOver} />
+          <PredictionResult result={result} previewUrls={selections.map((item) => item.previewUrl)} onReset={startOver} />
         ) : isLoading ? (
           <LoadingState uploadProgress={uploadProgress} />
         ) : (
           <>
             <DropZone
-              file={file}
-              previewUrl={previewUrl}
-              onSelect={selectFile}
-              onClear={clearSelection}
+              selections={selections}
+              onSelect={selectFiles}
+              onRemove={removeSelection}
               onError={setError}
               disabled={isLoading}
             />
@@ -72,15 +87,17 @@ export default function DetectPage() {
 
             <div className="mt-5 flex flex-col items-center justify-between gap-4 border-t border-ink/10 pt-5 sm:flex-row">
               <p className="text-xs text-ink/50 sm:text-sm">
-                {file ? 'Your image is ready for analysis.' : 'Select an image to enable analysis.'}
+                {selections.length
+                  ? `${selections.length} photo${selections.length === 1 ? '' : 's'} ready for analysis.`
+                  : 'Select at least one photo to enable analysis.'}
               </p>
               <button
                 type="button"
-                onClick={() => file && analyze(file)}
-                disabled={!file || isLoading}
+                onClick={() => selections.length && analyze(selections.map((item) => item.file))}
+                disabled={!selections.length || isLoading}
                 className="primary-button w-full disabled:cursor-not-allowed disabled:bg-ink/20 sm:w-auto"
               >
-                Analyze image <ArrowRight size={17} />
+                Analyze {selections.length > 1 ? 'field photos' : 'photo'} <ArrowRight size={17} />
               </button>
             </div>
           </>

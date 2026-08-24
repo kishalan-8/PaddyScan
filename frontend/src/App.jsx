@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AccountPage from './pages/AccountPage'
+import AssistantPage from './pages/AssistantPage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/detect" element={<DetectPage />} />
         <Route path="/weather" element={<WeatherPage />} />
+        <Route path="/assistant" element={<AssistantPage />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/signup" element={<AuthPage mode="signup" />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

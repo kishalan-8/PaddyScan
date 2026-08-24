@@ -1,6 +1,6 @@
 # PaddyScan
 
-A local full-stack application that validates a paddy leaf with YOLOv10, classifies the detected crop with ResNet18, and provides location-aware field weather through WeatherAPI.com.
+A local full-stack application that validates paddy leaves with YOLOv10, classifies the detected crops with ResNet18, combines up to five leaf photos into a field-level diagnosis, and provides location-aware field weather through WeatherAPI.com.
 
 Signed-in farmers can also save detections to MongoDB Atlas, store prediction images in Cloudinary, and maintain private notes for every scan.
 
@@ -10,6 +10,7 @@ Signed-in farmers can also save detections to MongoDB Atlas, store prediction im
 2. The detected crop must contain a coherent green/yellow/brown plant region. This protects against the supplied detector's high-confidence predictions on random texture.
 3. If either validation fails, the API returns HTTP 422 and **does not run disease classification**.
 4. ResNet18 classifies only the validated leaf crop.
+5. A field check can include one to five photos. Complete class-probability distributions are averaged across valid leaves to produce the combined diagnosis and photo-consensus score. Photos that fail validation are excluded without discarding the rest of the batch.
 
 A generic COCO YOLOv10 checkpoint cannot replace the leaf detector because COCO has no paddy-leaf class. For research-quality out-of-distribution rejection, retrain/fine-tune the leaf detector with representative non-leaf images as negative/background training examples.
 
@@ -47,6 +48,8 @@ Then edit `backend/.env`:
 
 ```text
 WEATHERAPI_KEY=your_key_here
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3.6-flash
 MONGODB_URI=your_atlas_connection_string
 MONGODB_DATABASE=rice_disease
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -101,6 +104,14 @@ PASSWORD_RESET_CONSOLE=false
 ```
 
 Never use the normal Gmail password and never commit the App Password.
+
+## Grounded farming assistant
+
+The `/assistant` page answers rice-health questions in English, Sinhala, or Tamil. The backend sends a curated RRDI/IRRI fact library with each request, requires a structured response, and validates every citation against the approved source catalogue before returning it to the browser. It does not give the model unrestricted web access.
+
+Add `GEMINI_API_KEY` to `backend/.env` to enable it. `GEMINI_MODEL` defaults to the stable `gemini-3.6-flash` model and can be changed without editing code. The API key remains on the backend and must never be added to a frontend environment file.
+
+The approved material is maintained in `backend/data/assistant_knowledge.py`. Update a fact and its source together so every supported claim stays traceable. The assistant is an information aid; serious, uncertain, or rapidly spreading field problems should be confirmed by a qualified agriculture officer.
 
 For an HTTPS deployment, set `COOKIE_SECURE=true` and replace `CORS_ORIGINS` with the deployed frontend URL.
 

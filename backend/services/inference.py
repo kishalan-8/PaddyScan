@@ -41,7 +41,6 @@ class InferenceService:
         self._classes: list[str] = EXPECTED_CLASSES.copy()
         self._leaf_class_ids: set[int] = set()
         self._detector_labels: dict[int, str] = {}
-        self._load_error: str | None = None
         self._lock = threading.Lock()
 
     @property
@@ -72,8 +71,7 @@ class InferenceService:
         try:
             self._load_models()
             return True
-        except Exception as exc:
-            self._load_error = str(exc)
+        except Exception:
             return False
 
     def _ensure_models(self) -> None:
@@ -92,7 +90,6 @@ class InferenceService:
         try:
             self._load_models()
         except Exception as exc:
-            self._load_error = str(exc)
             raise ModelLoadError(f"Models could not be loaded: {exc}") from exc
 
     def _load_models(self) -> None:
@@ -151,7 +148,6 @@ class InferenceService:
             self._detector = detector
             self._detector_labels = detector_labels
             self._leaf_class_ids = leaf_class_ids
-            self._load_error = None
 
     @staticmethod
     def _normalise_detector_names(names: Any) -> dict[int, str]:
@@ -221,6 +217,11 @@ class InferenceService:
             probabilities = self._torch.softmax(logits, dim=1)[0]
             top_probabilities, top_indices = self._torch.topk(probabilities, k=3)
 
+        class_probabilities = {
+            disease: round(float(probabilities[index].item()), 6)
+            for index, disease in enumerate(self._classes)
+        }
+
         top_predictions = [
             {
                 "disease": self._classes[int(index.item())],
@@ -243,6 +244,9 @@ class InferenceService:
                 "height": y2 - y1,
             },
             "topPredictions": top_predictions,
+            # The route uses the complete distribution when combining several
+            # photos. It removes this internal field before returning the response.
+            "classProbabilities": class_probabilities,
             "imageSize": {"width": image.width, "height": image.height},
         }
 

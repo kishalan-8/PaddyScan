@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 
 from config import settings
-from services.inference import inference_service
 from services.cloud_storage import cloud_storage
 from services.database import database
+from services.farming_assistant import farming_assistant
+from services.inference import inference_service
 
 
 router = APIRouter(tags=["health"])
@@ -18,6 +19,12 @@ def health() -> dict:
         "weather": {
             "ready": bool(settings.weatherapi_key),
             "provider": "WeatherAPI.com",
+        },
+        "assistant": {
+            "ready": farming_assistant.ready,
+            "provider": "Google Gemini",
+            "model": settings.gemini_model,
+            "sources": ["RRDI", "IRRI"],
         },
         "database": database.status(),
         "cloudinary": {"ready": cloud_storage.ready},

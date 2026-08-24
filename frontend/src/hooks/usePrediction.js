@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import axios from 'axios'
-import { analyzeRiceLeaf } from '../services/api'
+import { analyzeRiceLeaves } from '../services/api'
 
 function getErrorMessage(error) {
   if (axios.isAxiosError(error)) {
@@ -17,14 +17,14 @@ export default function usePrediction() {
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
-  const analyze = useCallback(async (file) => {
+  const analyze = useCallback(async (files) => {
     setIsLoading(true)
     setError('')
     setResult(null)
     setUploadProgress(0)
 
     try {
-      const prediction = await analyzeRiceLeaf(file, (event) => {
+      const prediction = await analyzeRiceLeaves(files, (event) => {
         if (event.total) setUploadProgress(Math.round((event.loaded * 100) / event.total))
       })
       setResult(prediction)
@@ -45,4 +45,3 @@ export default function usePrediction() {
 
   return { result, error, isLoading, uploadProgress, analyze, reset, setError }
 }
-

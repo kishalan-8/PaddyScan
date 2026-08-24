@@ -58,6 +58,11 @@ function HistoryCard({ item, active, onClick }) {
         <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] ${item.disease === 'healthy' ? 'bg-[#dceca0] text-ink' : 'bg-[#fff2cb] text-[#76501d]'}`}>
           {Math.round(item.classificationConfidence * 100)}% match
         </span>
+        {item.analyzedPhotoCount > 1 && (
+          <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-white backdrop-blur">
+            {item.analyzedPhotoCount} photos
+          </span>
+        )}
       </div>
       <div className="p-4">
         <h3 className="truncate font-semibold tracking-[-0.015em]">{getDiseaseName(item.disease)}</h3>
@@ -99,6 +104,15 @@ function DetectionDetail({ item, onClose, onDelete, onChange }) {
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
+  const storedImages = item.sourceImages?.length
+    ? item.sourceImages
+    : item.originalImage ? [{ photoIndex: 0, ...item.originalImage }] : []
+  const [displayedPhotoIndex, setDisplayedPhotoIndex] = useState(item.primaryPhotoIndex || 0)
+  const displayedImage = storedImages.find((image) => image.photoIndex === displayedPhotoIndex) || storedImages[0]
+
+  useEffect(() => {
+    setDisplayedPhotoIndex(item.primaryPhotoIndex || 0)
+  }, [item.id, item.primaryPhotoIndex])
 
   async function addNote(text) {
     try {
@@ -137,16 +151,31 @@ function DetectionDetail({ item, onClose, onDelete, onChange }) {
 
       <div className="p-5 sm:p-6">
         <div className="overflow-hidden rounded-2xl bg-black/15">
-          <img src={item.originalImage?.secureUrl} alt="Stored leaf" className="max-h-72 w-full object-contain" />
+          {displayedImage && <img src={displayedImage.secureUrl} alt="Stored leaf" className="max-h-72 w-full object-contain" />}
         </div>
+        {storedImages.length > 1 && (
+          <div className="mt-2 grid grid-cols-5 gap-2">
+            {storedImages.map((image, index) => (
+              <button
+                key={image.publicId}
+                type="button"
+                onClick={() => setDisplayedPhotoIndex(image.photoIndex)}
+                className={`overflow-hidden rounded-lg border-2 ${displayedImage?.publicId === image.publicId ? 'border-[#dceca0]' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                aria-label={`View stored photo ${index + 1}`}
+              >
+                <img src={image.secureUrl} alt="" className="aspect-square w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-xl border border-white/10 bg-white/[0.055] p-3">
             <span className="text-[9px] uppercase tracking-[0.11em] text-white/35">Disease confidence</span>
             <strong className="mt-1 block text-lg font-semibold text-white">{(item.classificationConfidence * 100).toFixed(1)}%</strong>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/[0.055] p-3">
-            <span className="text-[9px] uppercase tracking-[0.11em] text-white/35">Leaf confidence</span>
-            <strong className="mt-1 block text-lg font-semibold text-white">{(item.detectionConfidence * 100).toFixed(1)}%</strong>
+            <span className="text-[9px] uppercase tracking-[0.11em] text-white/35">{item.isMultiPhoto ? 'Photo consensus' : 'Leaf confidence'}</span>
+            <strong className="mt-1 block text-lg font-semibold text-white">{((item.isMultiPhoto ? item.consensusRatio : item.detectionConfidence) * 100).toFixed(1)}%</strong>
           </div>
         </div>
 

@@ -50,9 +50,9 @@ api.interceptors.response.use(
   },
 )
 
-export async function analyzeRiceLeaf(file, onUploadProgress) {
+export async function analyzeRiceLeaves(files, onUploadProgress) {
   const formData = new FormData()
-  formData.append('file', file)
+  files.forEach((file) => formData.append('files', file))
 
   const response = await api.post('/predict', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

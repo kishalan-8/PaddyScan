@@ -51,6 +51,8 @@ def _mongodb_uri() -> str:
 
 @dataclass(frozen=True)
 class Settings:
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
     weatherapi_key: str = os.getenv("WEATHERAPI_KEY", "").strip()
     mongodb_uri: str = field(default_factory=_mongodb_uri)
     mongodb_database: str = os.getenv("MONGODB_DATABASE", "rice_disease").strip()
@@ -83,6 +85,7 @@ class Settings:
         BASE_DIR / "trained_models" / "classification" / "classes.json"
     )
     max_upload_bytes: int = 10 * 1024 * 1024
+    max_prediction_photos: int = 5
     # The detector is a paddy-leaf presence gate, not the disease classifier.
     # These conservative defaults reduce out-of-distribution false positives.
     leaf_detection_confidence: float = _float_env("LEAF_DETECTION_CONFIDENCE", 0.70)
