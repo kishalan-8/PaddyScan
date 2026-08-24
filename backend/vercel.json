@@ -3,7 +3,7 @@
   "functions": {
     "app.py": {
       "includeFiles": "trained_models/**",
-      "excludeFiles": "{tests/**,uploads/**,__pycache__/**}",
+      "excludeFiles": "{tests/**,uploads/**,__pycache__/**,**/*.pyc}",
       "maxDuration": 300
     }
   }
