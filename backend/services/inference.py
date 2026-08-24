@@ -279,8 +279,8 @@ class InferenceService:
 
     @staticmethod
     def _has_coherent_leaf_colours(crop: Image.Image) -> bool:
-        import numpy as np
-        from skimage.measure import label
+        import cv2
+        import numpy as np      
 
         sample = crop.copy()
         sample.thumbnail((224, 224), Image.Resampling.LANCZOS)
@@ -297,7 +297,10 @@ class InferenceService:
         if colour_ratio < settings.min_leaf_colour_ratio:
             return False
 
-        components = label(plant_mask, connectivity=1)
+        _, components = cv2.connectedComponents(
+            plant_mask.astype(np.uint8),
+            connectivity=4,
+)
         counts = np.bincount(components.ravel())
         largest_component = int(counts[1:].max()) if len(counts) > 1 else 0
         coherent_ratio = largest_component / plant_mask.size
