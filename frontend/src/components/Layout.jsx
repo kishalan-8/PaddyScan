@@ -143,8 +143,12 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-ink/10 px-5 py-7 text-center text-xs text-ink/45">
+      <footer className="border-t border-ink/10 px-5 py-7 text-center text-xs leading-5 text-ink/45">
         <p>AI-assisted screening for rice leaf disease.</p>
+        <p className="mt-1.5">
+          Built by <strong className="font-semibold text-ink/65">Kishalan Prakalathan</strong>
+          {' · '}BSc Computer Science{' · '}University of Bedfordshire
+        </p>
       </footer>
     </div>
   )

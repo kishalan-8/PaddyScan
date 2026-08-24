@@ -25,8 +25,6 @@ export default function AuthPage({ mode }) {
     fullName: '',
     email: '',
     password: '',
-    farmName: '',
-    district: '',
   })
 
   if (isAuthenticated) return <Navigate to="/history" replace />
@@ -122,19 +120,6 @@ export default function AuthPage({ mode }) {
                   </button>
                 </div>
               </label>
-
-              {isSignup && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="auth-field">
-                    <span>Farm name <small>optional</small></span>
-                    <input name="farmName" value={form.farmName} onChange={updateField} autoComplete="organization" placeholder="Green Acres" />
-                  </label>
-                  <label className="auth-field">
-                    <span>District <small>optional</small></span>
-                    <input name="district" value={form.district} onChange={updateField} placeholder="Kurunegala" />
-                  </label>
-                </div>
-              )}
 
               {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{error}</div>}
 
