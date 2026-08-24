@@ -1,2 +1,0 @@
-"""Backend utility functions."""
-

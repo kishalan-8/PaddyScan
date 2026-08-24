@@ -37,7 +37,6 @@ def _bool_env(name: str, default: bool) -> bool:
 
 
 def _mongodb_uri() -> str:
-    """Normalize the common Atlas copy/paste form that contains a double slash."""
     raw = os.getenv("MONGODB_URI", "").strip()
     if not raw:
         return ""
@@ -86,8 +85,6 @@ class Settings:
     )
     max_upload_bytes: int = 10 * 1024 * 1024
     max_prediction_photos: int = 5
-    # The detector is a paddy-leaf presence gate, not the disease classifier.
-    # These conservative defaults reduce out-of-distribution false positives.
     leaf_detection_confidence: float = _float_env("LEAF_DETECTION_CONFIDENCE", 0.70)
     min_leaf_area_ratio: float = _float_env("MIN_LEAF_AREA_RATIO", 0.03)
     min_leaf_colour_ratio: float = _float_env("MIN_LEAF_COLOUR_RATIO", 0.08)

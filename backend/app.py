@@ -16,8 +16,6 @@ from services.inference import inference_service
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Warm the models when weights are available. A missing model should not
-    # prevent the API from starting; /api/health reports what still needs copying.
     inference_service.load_if_available()
     await database.connect()
     yield

@@ -1,1 +1,0 @@
-"""Curated application data."""

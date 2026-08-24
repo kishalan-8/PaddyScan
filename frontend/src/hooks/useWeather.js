@@ -16,7 +16,7 @@ function saveLocation(location) {
   try {
     window.localStorage.setItem(SAVED_LOCATION_KEY, JSON.stringify(location))
   } catch {
-    // Weather still works when storage is blocked.
+    return
   }
 }
 

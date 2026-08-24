@@ -24,11 +24,11 @@ PADDY_LEAF_LABELS = {"leaf", "paddy leaf", "rice leaf"}
 
 
 class ModelLoadError(RuntimeError):
-    """Raised when inference cannot start because model files are unavailable or invalid."""
+    pass
 
 
 class NoPaddyLeafError(ValueError):
-    """Raised when YOLOv10 cannot confidently validate a paddy leaf."""
+    pass
 
 
 class InferenceService:
@@ -244,8 +244,6 @@ class InferenceService:
                 "height": y2 - y1,
             },
             "topPredictions": top_predictions,
-            # The route uses the complete distribution when combining several
-            # photos. It removes this internal field before returning the response.
             "classProbabilities": class_probabilities,
             "imageSize": {"width": image.width, "height": image.height},
         }
@@ -281,7 +279,6 @@ class InferenceService:
 
     @staticmethod
     def _has_coherent_leaf_colours(crop: Image.Image) -> bool:
-        """Reject texture/noise hallucinations while allowing green, yellow, and brown leaves."""
         import numpy as np
         from skimage.measure import label
 
@@ -290,9 +287,6 @@ class InferenceService:
         hsv = np.asarray(sample.convert("HSV"), dtype=np.uint8)
         hue, saturation, value = hsv[..., 0], hsv[..., 1], hsv[..., 2]
 
-        # PIL hue 12..115 covers brown/yellow/green/cyan-green tones commonly
-        # present in healthy and diseased paddy leaves. Saturation/value limits
-        # discard grey, black, and white background pixels.
         plant_mask = (
             (hue >= 12)
             & (hue <= 115)

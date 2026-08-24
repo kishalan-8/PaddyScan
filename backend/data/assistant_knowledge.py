@@ -1,9 +1,3 @@
-"""Approved, curated facts used to ground the farming assistant.
-
-Keep this material concise and traceable to the linked RRDI/IRRI pages. The
-assistant never browses the open web at request time and cannot cite other URLs.
-"""
-
 SOURCES = {
     "rrdi-diagnosis": {
         "title": "RRDI — Diagnosing a rice disease",

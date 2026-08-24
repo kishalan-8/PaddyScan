@@ -19,11 +19,11 @@ LANGUAGE_NAMES = {
 
 
 class AssistantConfigError(RuntimeError):
-    """Raised when the assistant provider is not configured."""
+    pass
 
 
 class AssistantProviderError(RuntimeError):
-    """Raised when a grounded answer cannot be obtained or validated."""
+    pass
 
 
 class FarmingAssistantService:

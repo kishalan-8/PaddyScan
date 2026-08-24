@@ -142,8 +142,6 @@ async def refresh_session(
         raise HTTPException(status_code=401, detail="No refresh session was found.")
     payload = decode_token(refresh_token, "refresh")
     db = _db()
-    # Consume the refresh session atomically. This prevents two concurrent
-    # requests from rotating the same token into competing sessions.
     session = await db.refresh_tokens.find_one_and_delete(
         {
             "jti": payload.get("jti"),
@@ -165,7 +163,6 @@ async def refresh_session(
 
 
 async def _prepare_password_reset(email: str) -> None:
-    """Create and deliver a reset after the generic public response is sent."""
     try:
         db = database.require()
         user = await db.users.find_one({"email": email})
@@ -213,7 +210,6 @@ async def forgot_password(
     payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
 ) -> dict[str, str]:
-    """Return uniformly, then prepare and deliver a reset in the background."""
     generic_message = (
         "If an account uses that email, a password-reset link will be sent."
     )

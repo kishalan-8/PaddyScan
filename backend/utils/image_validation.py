@@ -4,7 +4,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 
 class ImageValidationError(ValueError):
-    """Raised when uploaded bytes are not a supported, readable image."""
+    pass
 
 
 SUPPORTED_FORMATS = {"JPEG", "PNG", "WEBP"}

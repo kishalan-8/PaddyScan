@@ -1,8 +1,6 @@
 import axios from 'axios'
 
 const api = axios.create({
-  // Use the frontend origin in local development so the HttpOnly refresh
-  // cookie is not lost when the app is opened as 127.0.0.1 instead of localhost.
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 120000,
   withCredentials: true,

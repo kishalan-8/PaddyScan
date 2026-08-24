@@ -47,7 +47,6 @@ class CloudStorageService:
         images: list[tuple[bytes, str | None, int]],
         prediction: dict[str, Any],
     ) -> tuple[dict[str, Any], list[str]]:
-        """Store every valid source photo and attach its asset to the field result."""
         if not self.ready:
             raise CloudStorageError("Cloudinary credentials are not configured.")
 

@@ -677,7 +677,6 @@ textarea:focus-visible,
   .weather-loading-orb { animation: none !important; }
 }
 
-/* Weather intelligence dashboard */
 .weather-page-v2 {
   background:
     radial-gradient(circle at 14% 5%, rgba(166, 190, 133, 0.16), transparent 24rem),

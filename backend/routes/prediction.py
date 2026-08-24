@@ -136,7 +136,6 @@ async def predict(
     file: UploadFile | None = File(default=None),
     user: dict | None = Depends(get_optional_user),
 ) -> dict:
-    # `file` keeps older single-photo clients compatible; new clients use `files`.
     uploads = list(files or [])
     if file is not None:
         uploads.append(file)

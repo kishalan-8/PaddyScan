@@ -13,11 +13,11 @@ SEARCH_CACHE_SECONDS = 24 * 60 * 60
 
 
 class WeatherConfigError(RuntimeError):
-    """Raised when the WeatherAPI integration has not been configured."""
+    pass
 
 
 class WeatherProviderError(RuntimeError):
-    """Raised when WeatherAPI cannot return a usable response."""
+    pass
 
 
 class WeatherService:
