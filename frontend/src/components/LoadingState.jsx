@@ -1,7 +1,7 @@
 import { ScanLine } from 'lucide-react'
 
 export default function LoadingState({ uploadProgress }) {
-  const stage = uploadProgress < 100 ? 'Uploading field photos' : 'Validating leaves and combining results'
+  const stage = uploadProgress < 100 ? 'Uploading field photos' : 'Validating and comparing leaf results'
 
   return (
     <div className="rounded-2xl border border-forest/15 bg-white/70 px-6 py-10 text-center shadow-gentle sm:px-10">

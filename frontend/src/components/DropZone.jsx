@@ -136,7 +136,7 @@ export default function DropZone({ selections, onSelect, onRemove, onError, disa
           </article>
         ))}
       </div>
-      <p className="mt-4 text-xs leading-5 text-ink/45">For the strongest consensus, photograph separate leaves under similar lighting.</p>
+      <p className="mt-4 text-xs leading-5 text-ink/45">Matching diagnoses are combined. Different diagnoses remain attached to their individual photos.</p>
     </div>
   )
 }

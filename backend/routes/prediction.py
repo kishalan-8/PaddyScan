@@ -34,6 +34,44 @@ def _public_photo_result(
 
 def _aggregate_predictions(entries: list[dict[str, Any]], photo_count: int) -> dict[str, Any]:
     valid = [entry for entry in entries if entry["accepted"]]
+    unique_diseases = sorted({entry["disease"] for entry in valid})
+    is_combined = len(valid) > 1 and len(unique_diseases) == 1
+    has_mixed_diseases = len(unique_diseases) > 1
+    primary = max(valid, key=lambda entry: entry["classificationConfidence"])
+
+    common = {
+        "leafDetected": True,
+        "photoCount": photo_count,
+        "analyzedPhotoCount": len(valid),
+        "rejectedPhotoCount": photo_count - len(valid),
+        "isMultiPhoto": photo_count > 1,
+        "isCombinedDiagnosis": is_combined,
+        "hasMixedDiseases": has_mixed_diseases,
+        "diagnosisMode": "combined" if is_combined else "individual" if has_mixed_diseases else "single",
+        "detectedDiseases": unique_diseases,
+        "primaryPhotoIndex": primary["inputIndex"],
+        "photos": [
+            {key: value for key, value in entry.items() if key != "_classProbabilities"}
+            for entry in entries
+        ],
+    }
+
+    # Different diseases must remain independent photo results. The top-level
+    # values are only a backwards-compatible representative of the strongest
+    # individual result; the client uses `photos` to display each diagnosis.
+    if not is_combined:
+        return {
+            "disease": primary["disease"],
+            "classificationConfidence": primary["classificationConfidence"],
+            "detectionConfidence": primary["detectionConfidence"],
+            "boundingBox": primary["boundingBox"],
+            "imageSize": primary["imageSize"],
+            "topPredictions": primary["topPredictions"],
+            "consensusCount": None,
+            "consensusRatio": None,
+            **common,
+        }
+
     distributions = [entry["_classProbabilities"] for entry in valid]
     diseases = list(distributions[0])
     averaged = {
@@ -43,37 +81,21 @@ def _aggregate_predictions(entries: list[dict[str, Any]], photo_count: int) -> d
     ranked = sorted(averaged.items(), key=lambda item: item[1], reverse=True)
     winner = ranked[0][0]
 
-    matching = [entry for entry in valid if entry["disease"] == winner]
-    primary = max(
-        matching or valid,
-        key=lambda entry: entry["classificationConfidence"],
-    )
-    consensus_count = len(matching)
-
     return {
         "disease": winner,
         "classificationConfidence": round(ranked[0][1], 6),
         "detectionConfidence": round(
             sum(entry["detectionConfidence"] for entry in valid) / len(valid), 6
         ),
-        "leafDetected": True,
         "boundingBox": primary["boundingBox"],
         "imageSize": primary["imageSize"],
         "topPredictions": [
             {"disease": disease, "confidence": round(confidence, 6)}
             for disease, confidence in ranked[:3]
         ],
-        "photoCount": photo_count,
-        "analyzedPhotoCount": len(valid),
-        "rejectedPhotoCount": photo_count - len(valid),
-        "isMultiPhoto": photo_count > 1,
-        "consensusCount": consensus_count,
-        "consensusRatio": round(consensus_count / len(valid), 6),
-        "primaryPhotoIndex": primary["inputIndex"],
-        "photos": [
-            {key: value for key, value in entry.items() if key != "_classProbabilities"}
-            for entry in entries
-        ],
+        "consensusCount": len(valid),
+        "consensusRatio": 1.0,
+        **common,
     }
 
 

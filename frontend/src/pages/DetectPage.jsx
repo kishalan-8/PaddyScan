@@ -59,7 +59,7 @@ export default function DetectPage() {
             <p className="eyebrow">Leaf check</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Inspect a rice leaf</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-ink/55 sm:text-base">
-              Add up to five leaves from the same field. Each leaf is validated before a combined diagnosis is produced.
+              Add up to five leaves from the same field. Matching results are combined; different diseases stay as separate photo results.
             </p>
           </div>
         )}

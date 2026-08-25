@@ -43,9 +43,12 @@ export default function PredictionResult({ result, previewUrls = [], onReset }) 
   }, [result])
 
   const selectedPhoto = photos.find((photo) => photo.inputIndex === selectedIndex) || photos[0]
+  const hasMixedDiseases = result.hasMixedDiseases || result.diagnosisMode === 'individual'
+  const isCombinedDiagnosis = result.isCombinedDiagnosis || result.diagnosisMode === 'combined' || (result.isMultiPhoto && !result.diagnosisMode && !result.hasMixedDiseases)
+  const displayedResult = hasMixedDiseases && selectedPhoto.accepted ? selectedPhoto : result
   const selectedAsset = result.sourceImages?.find((asset) => asset.photoIndex === selectedPhoto.inputIndex)
   const selectedUrl = previewUrls[selectedPhoto.inputIndex] || selectedAsset?.secureUrl || result.originalImage?.secureUrl
-  const healthy = result.disease === 'healthy'
+  const healthy = displayedResult.disease === 'healthy'
   const box = selectedPhoto.accepted ? selectedPhoto.boundingBox : null
   const imageSize = selectedPhoto.accepted ? selectedPhoto.imageSize : null
   const overlay = box && imageSize ? {
@@ -73,6 +76,13 @@ export default function PredictionResult({ result, previewUrls = [], onReset }) 
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <TriangleAlert className="mt-0.5 shrink-0" size={17} />
           <span>{result.rejectedPhotoCount} photo{result.rejectedPhotoCount === 1 ? ' was' : 's were'} excluded because a valid paddy leaf could not be confirmed.</span>
+        </div>
+      )}
+
+      {hasMixedDiseases && (
+        <div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
+          <Images className="mt-0.5 shrink-0" size={17} />
+          <span>Different diseases were detected, so these photos were not combined. Select each photo to review its individual result.</span>
         </div>
       )}
 
@@ -116,12 +126,14 @@ export default function PredictionResult({ result, previewUrls = [], onReset }) 
         </div>
 
         <section className="flex flex-col p-6 sm:p-8 lg:p-10">
-          <p className="eyebrow">{result.isMultiPhoto ? 'Combined field diagnosis' : 'Analysis result'}</p>
+          <p className="eyebrow">{hasMixedDiseases ? 'Individual photo result' : isCombinedDiagnosis ? 'Combined field diagnosis' : 'Analysis result'}</p>
           <div className="mt-5 flex items-start justify-between gap-5">
             <div>
-              <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{getDiseaseName(result.disease)}</h1>
+              <h1 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{getDiseaseName(displayedResult.disease)}</h1>
               <p className="mt-2 text-sm leading-6 text-ink/50">
-                {result.isMultiPhoto
+                {hasMixedDiseases
+                  ? `Photo ${selectedPhoto.inputIndex + 1} was analyzed independently because the uploaded leaves produced different results.`
+                  : isCombinedDiagnosis
                   ? `Combined from ${result.analyzedPhotoCount} valid leaf photos; ${result.consensusCount} produced this as their top result.`
                   : healthy
                     ? 'The leaf appears healthy based on the trained conditions.'
@@ -134,12 +146,12 @@ export default function PredictionResult({ result, previewUrls = [], onReset }) 
           </div>
 
           <div className="mt-7">
-            <ConfidenceMeter label={result.isMultiPhoto ? 'Combined classification confidence' : 'Classification confidence'} value={result.classificationConfidence} icon={ScanSearch} />
-            {result.isMultiPhoto && <ConfidenceMeter label="Photo consensus" value={result.consensusRatio} icon={Images} />}
-            {result.leafDetected && <ConfidenceMeter label="Average leaf detection confidence" value={result.detectionConfidence} icon={Focus} />}
+            <ConfidenceMeter label={isCombinedDiagnosis ? 'Combined classification confidence' : 'Classification confidence'} value={displayedResult.classificationConfidence} icon={ScanSearch} />
+            {isCombinedDiagnosis && <ConfidenceMeter label="Photo consensus" value={result.consensusRatio} icon={Images} />}
+            {result.leafDetected && <ConfidenceMeter label={isCombinedDiagnosis ? 'Average leaf detection confidence' : 'Leaf detection confidence'} value={displayedResult.detectionConfidence} icon={Focus} />}
           </div>
 
-          {photos.length > 1 && selectedPhoto.accepted && (
+          {photos.length > 1 && !hasMixedDiseases && selectedPhoto.accepted && (
             <div className="mt-3 rounded-xl bg-ink/[0.045] p-3 text-xs text-ink/55">
               Photo {selectedPhoto.inputIndex + 1}: <strong className="text-ink">{getDiseaseName(selectedPhoto.disease)}</strong> · {formatPercent(selectedPhoto.classificationConfidence)}
             </div>
@@ -153,7 +165,7 @@ export default function PredictionResult({ result, previewUrls = [], onReset }) 
         </section>
       </div>
 
-      {!healthy && <DiseaseGuidance disease={result.disease} />}
+      {!healthy && selectedPhoto.accepted !== false && <DiseaseGuidance disease={displayedResult.disease} />}
     </div>
   )
 }
